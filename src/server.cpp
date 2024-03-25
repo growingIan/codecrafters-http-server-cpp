@@ -97,17 +97,17 @@ int main(int argc, char **argv) {
   std::cout<< read_message << "\n";
 
   std::string slash = "/";
-  std::string echo = "/echo";
+  std::string echo = "/echo/";
 
   if (read_message == slash)
   { 
     send(new_server_fd, "HTTP/1.1 200 OK\r\n\r\n", 19, 0);
   }
-  else if (read_message.substr(0, 5) == echo)
+  else if (read_message.substr(0, 6) == echo)
   {
     char out_buffer[512];
     memset(out_buffer, 0, sizeof(out_buffer));
-    std::string message = read_message.substr(5, (int)read_message.size()-5);
+    std::string message = read_message.substr(6, (int)read_message.size()-6);
     std::string response_prefix = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: "; 
     size_t response_content_length = message.size();
     response_prefix += std::to_string(response_content_length);
