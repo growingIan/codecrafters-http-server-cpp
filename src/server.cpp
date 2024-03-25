@@ -86,10 +86,16 @@ int main(int argc, char **argv) {
   }
 
   std::string read_message = "";
+  std::string full_message = "";
   
   for(int i = read_pos; buffer[i] != ' '; i++)
   {
     read_message += std::string(1, buffer[i]);
+  }
+
+  for(int i = read_pos; buffer[i] != '\0'; i++)
+  {
+    full_message += std::string(1, buffer[i]);
   }
 
   std::cout<< "The read message is the following:\n";
@@ -98,12 +104,13 @@ int main(int argc, char **argv) {
 
   std::string slash = "/";
   std::string echo = "/echo/";
+  std::string user_agent = "/user-agent";
 
   if (read_message == slash)
   { 
     send(new_server_fd, "HTTP/1.1 200 OK\r\n\r\n", 19, 0);
   }
-  else if (read_message.substr(0, 6) == echo)
+  else if (read_message.size() >= 6 && read_message.substr(0, 6) == echo)
   {
     char out_buffer[512];
     memset(out_buffer, 0, sizeof(out_buffer));
@@ -128,6 +135,50 @@ int main(int argc, char **argv) {
     std::cout<< "The response being sent is:\n" << response_prefix + message << "\n";
 
     send(new_server_fd, out_buffer,  response_prefix.size() + message.size() + 1, 0);
+  }
+  else if (read_message.size() >= 11 && read_message.substr(0, 11) == user_agent)
+  {
+    std::string user_agent_string = "User-Agent: ";
+    size_t pos = full_message.find(user_agent_string);
+
+    if (pos != string::npos)
+    {
+      std::cout<< "Found User-Agent: in request, starts at position: " << pos << "\n";
+    }
+
+    std::string message = "";
+
+    for(int i = pos + user_agent_string.size(); full_message[i] != '\r' && full_message[i] != '\0'; i++)
+    {
+      message += std::string(1, full_message[i]);
+    }
+
+    std::cout<< "User-Agent string is the following:\n";
+    std::cout<< message << "\n";
+
+    char out_buffer[512];
+    memset(out_buffer, 0, sizeof(out_buffer));
+    std::string response_prefix = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: "; 
+    size_t response_content_length = message.size();
+    response_prefix += std::to_string(response_content_length);
+    response_prefix += "\r\n\r\n";
+
+    for(int i = 0; i<response_prefix.size(); i++)
+    {
+      out_buffer[i] = response_prefix[i];
+    }
+
+    for(int i = response_prefix.size(); i<response_prefix.size() + message.size(); i++)
+    {
+      out_buffer[i] = message[i - (int)response_prefix.size()];
+    }
+
+    out_buffer[response_prefix.size() + message.size()] = '\0';
+
+    std::cout<< "The response being sent is:\n" << response_prefix + message << "\n";
+
+    send(new_server_fd, out_buffer,  response_prefix.size() + message.size() + 1, 0);
+
   }
   else
   {
