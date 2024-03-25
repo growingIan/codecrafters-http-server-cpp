@@ -27,12 +27,19 @@ void socket_work(int new_server_fd, std::string dir = "")
 
 
   int read_pos = -1;
+  string verb;
+  string get = "GET";
+  string post = "POST";
   for(int i = 0; buffer[i] != '\0'; i++)
   {
     if(buffer[i] == ' ')
     {
       read_pos = i+1;
       break;
+    }
+    else
+    {
+      verb += std::string(1, buffer[i]);
     }
   }
 
@@ -53,7 +60,7 @@ void socket_work(int new_server_fd, std::string dir = "")
     read_message += std::string(1, buffer[i]);
   }
 
-  for(int i = read_pos; buffer[i] != '\0'; i++)
+  for(int i = read_pos; i < read_content; i++)
   {
     full_message += std::string(1, buffer[i]);
   }
@@ -141,7 +148,7 @@ void socket_work(int new_server_fd, std::string dir = "")
     send(new_server_fd, out_buffer,  response_prefix.size() + message.size() + 1, 0);
 
   }
-  else if (read_message.size() >= 7 && read_message.substr(0, 7) == files)
+  else if (read_message.size() >= 7 && read_message.substr(0, 7) == files && verb == get)
   {
     char out_buffer[4096];
     memset(out_buffer, 0, sizeof(out_buffer));
@@ -200,6 +207,33 @@ void socket_work(int new_server_fd, std::string dir = "")
     std::cout<< "The response being sent is:\n" << response_prefix + message << "\n";
 
     send(new_server_fd, out_buffer,  response_prefix.size() + message.size() + 1, 0);
+  }
+  else if (read_message.size() >= 7 && read_message.substr(0, 7) == files && verb == post)
+  {
+    std::string filename = read_message.substr(7, (int)read_message.size() - 7);
+
+    std::cout << "The filename is: \n";
+    std::cout << filename <<" \n";
+
+    std::string full_file_path = dir + "/" + filename;
+
+    std::cout << "The full file path is: \n";
+    std::cout << full_file_path <<" \n";
+
+    content_start_pos = full_message.find("\r\n\r\n") + 4;
+
+    std::ofstream file;
+    file.open(full_file_path, std::ios::binary);
+
+    for(int i = content_start_pos;  i<full_message.size(); i++)
+    {
+      char ch = full_message[i];
+      file.put(ch);
+    }
+
+    file.close();
+
+    send(new_server_fd, "HTTP/1.1 201 CREATED\r\n\r\n", 24, 0);
   }
   else
   {
