@@ -8,8 +8,9 @@
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <thread>
+#include <fstream>
 
-void socket_work(int new_server_fd)
+void socket_work(int new_server_fd, std::string dir = "")
 {
   char buffer[256];
   memset(buffer, 0, sizeof(buffer));
@@ -64,6 +65,7 @@ void socket_work(int new_server_fd)
   std::string slash = "/";
   std::string echo = "/echo/";
   std::string user_agent = "/user-agent";
+  std::string files = "/files/";
 
   if (read_message == slash)
   { 
@@ -139,6 +141,66 @@ void socket_work(int new_server_fd)
     send(new_server_fd, out_buffer,  response_prefix.size() + message.size() + 1, 0);
 
   }
+  else if (read_message.size() >= 7 && read_message.substr(0, 7) == files)
+  {
+    char out_buffer[4096];
+    memset(out_buffer, 0, sizeof(out_buffer));
+    
+    std::string filename = read_message.substr(7, (int)read_message.size() - 7);
+
+    std::cout << "The filename is: \n";
+    std::cout << filename <<" \n";
+
+    std::string full_file_path = dir + "/" + filename;
+
+    std::cout << "The full file path is: \n";
+    std::cout << full_file_path <<" \n";
+
+    std::ifstream file;
+
+    file.open(full_file_path.c_str(), ios::binary);
+
+    std::string response_prefix;
+    std::string message = "";
+
+    if (!file.is_open())
+    {
+      send(new_server_fd, "HTTP/1.1 404 NOT FOUND\r\n\r\n", 26, 0);
+    }
+    else
+    { 
+      char ch;
+
+      while(!file.eof())
+      {
+        ch = file.get();
+        message += std::string(1, ch);
+      }
+
+      file.close();
+
+      response_prefix = "HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\nContent-Length: "; 
+      size_t response_content_length = message.size();
+      response_prefix += std::to_string(response_content_length);
+      response_prefix += "\r\n\r\n";
+    }
+
+    for(int i = 0; i<response_prefix.size(); i++)
+    {
+      out_buffer[i] = response_prefix[i];
+    }
+
+    for(int i = response_prefix.size(); i<response_prefix.size() + message.size(); i++)
+    {
+      out_buffer[i] = message[i - (int)response_prefix.size()];
+    }
+
+    out_buffer[response_prefix.size() + message.size()] = '\0';
+
+    std::cout<< "The response being sent is:\n" << response_prefix + message << "\n";
+
+    send(new_server_fd, out_buffer,  response_prefix.size() + message.size() + 1, 0);
+  }
   else
   {
     send(new_server_fd, "HTTP/1.1 404 NOT FOUND\r\n\r\n", 26, 0);
@@ -150,6 +212,19 @@ void socket_work(int new_server_fd)
 int main(int argc, char **argv) {
   // You can use print statements as follows for debugging, they'll be visible when running tests.
   std::cout << "Logs from your program will appear here!\n";
+
+  std::string dir = "";
+
+  if (argc > 1)
+  {
+    for(int i = 0; argv[2][i] != '\0'; i++)
+    {
+      dir += std::string(1, argv[2][i]);
+    }
+
+    std::cout << "The directory passed is: \n";
+    std::cout << dir << "\n";
+  }
 
   // Uncomment this block to pass the first stage
   
@@ -193,7 +268,7 @@ int main(int argc, char **argv) {
     int new_server_fd = accept(server_fd, (struct sockaddr *) &client_addr, (socklen_t *) &client_addr_len);
     std::cout << "Client connected\n";
 
-    std::thread t(socket_work, new_server_fd);
+    std::thread t(socket_work, new_server_fd, dir);
     t.detach();
   } 
   
