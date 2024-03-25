@@ -81,14 +81,14 @@ int main(int argc, char **argv) {
     std::cout<< "Error reading message.\n";
   }
 
-  string read_message = "";
+  std::string read_message = "";
   
   for(int i = read_pos; buffer[i] != ' '; i++)
   {
-    read_message += string(1, buffer[i]);
+    read_message += std::string(1, buffer[i]);
   }
 
-  string slash = "/";
+  std::string slash = "/";
 
   if (read_message == slash)
   { 
