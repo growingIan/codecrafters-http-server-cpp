@@ -62,10 +62,42 @@ int main(int argc, char **argv) {
   }
   else
   {
-    std::cout << "Here is the message: %s\n" << buffer << "\n";
+    std::cout << "Here is the message: \n" << buffer << "\n";
   }
 
-  send(new_server_fd, "HTTP/1.1 200 OK\r\n\r\n", 19, 0);
+
+  int read_pos = -1;
+  for(int i = 0; buffer[i] != '\0'; i++)
+  {
+    if(buffer[i] = ' ')
+    {
+      read_pos = i+1;
+      break;
+    }
+  }
+
+  if (read_pos == -1)
+  {
+    std::cout<< "Error reading message.\n";
+  }
+
+  string read_message = "";
+  
+  for(int i = read_pos; buffer[i] != ' '; i++)
+  {
+    read_message += string(1, buffer[i]);
+  }
+
+  string slash = "/";
+
+  if (read_message == slash)
+  { 
+    send(new_server_fd, "HTTP/1.1 200 OK\r\n\r\n", 19, 0);
+  }
+  else
+  {
+    send(new_server_fd, "HTTP/1.1 404 NOT FOUND\r\n\r\n", 26, 0);
+  }
 
   close(new_server_fd);
   
