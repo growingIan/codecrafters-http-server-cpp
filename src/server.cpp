@@ -141,7 +141,7 @@ int main(int argc, char **argv) {
     std::string user_agent_string = "User-Agent: ";
     size_t pos = full_message.find(user_agent_string);
 
-    if (pos != string::npos)
+    if (pos != std::string::npos)
     {
       std::cout<< "Found User-Agent: in request, starts at position: " << pos << "\n";
     }
