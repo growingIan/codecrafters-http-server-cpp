@@ -69,7 +69,7 @@ int main(int argc, char **argv) {
   int read_pos = -1;
   for(int i = 0; buffer[i] != '\0'; i++)
   {
-    if(buffer[i] = ' ')
+    if(buffer[i] == ' ')
     {
       read_pos = i+1;
       break;
@@ -79,6 +79,10 @@ int main(int argc, char **argv) {
   if (read_pos == -1)
   {
     std::cout<< "Error reading message.\n";
+  }
+  else
+  {
+    std::cout<< "Started reading message at position: " << read_pos << "\n";
   }
 
   std::string read_message = "";
