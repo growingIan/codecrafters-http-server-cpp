@@ -161,7 +161,7 @@ void socket_work(int new_server_fd, std::string dir = "")
     file.open(full_file_path.c_str(), std::ios::binary);
 
     std::string response_prefix;
-    std::string message = "";
+    std::string message;
 
     if (!file.is_open())
     {
@@ -181,7 +181,7 @@ void socket_work(int new_server_fd, std::string dir = "")
 
       response_prefix = "HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\nContent-Length: "; 
       size_t response_content_length = message.size();
-      response_prefix += std::to_string(response_content_length);
+      response_prefix += std::to_string(response_content_length-1);
       response_prefix += "\r\n\r\n";
     }
 
