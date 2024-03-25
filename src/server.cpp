@@ -88,6 +88,10 @@ int main(int argc, char **argv) {
     read_message += std::string(1, buffer[i]);
   }
 
+  std::cout<< "The read message is the following:\n";
+
+  std::cout<< read_message << "\n";
+
   std::string slash = "/";
 
   if (read_message == slash)
