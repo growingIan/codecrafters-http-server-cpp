@@ -108,7 +108,10 @@ int main(int argc, char **argv) {
     char out_buffer[512];
     memset(out_buffer, 0, sizeof(out_buffer));
     std::string message = read_message.substr(5, (int)read_message.size()-5);
-    std::string response_prefix = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: 3\r\n\r\n";
+    std::string response_prefix = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: "; 
+    size_t response_content_length = message.size();
+    response_prefix += std::to_string(response_content_length);
+    response_prefix += "\r\n\r\n";
 
     for(int i = 0; i<response_prefix.size(); i++)
     {
@@ -122,7 +125,7 @@ int main(int argc, char **argv) {
 
     out_buffer[response_prefix.size() + message.size()] = '\0';
 
-    std::cout<< "The response being sent is: " << response_prefix + message << "\n";
+    std::cout<< "The response being sent is:\n" << response_prefix + message << "\n";
 
     send(new_server_fd, out_buffer,  response_prefix.size() + message.size() + 1, 0);
   }
