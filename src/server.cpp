@@ -106,7 +106,7 @@ int main(int argc, char **argv) {
   else if (read_message.substr(0, 5) == echo)
   {
     char out_buffer[512];
-    memset(0, out_buffer, sizeof(out_buffer));
+    memset(out_buffer, 0, sizeof(out_buffer));
     std::string message = read_message.substr(5, (int)read_message.size()-5);
     std::string response_prefix = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: 3\r\n\r\n";
 
