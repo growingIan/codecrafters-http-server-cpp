@@ -158,7 +158,7 @@ void socket_work(int new_server_fd, std::string dir = "")
 
     std::ifstream file;
 
-    file.open(full_file_path.c_str(), ios::binary);
+    file.open(full_file_path.c_str(), std::ios::binary);
 
     std::string response_prefix;
     std::string message = "";
