@@ -97,10 +97,34 @@ int main(int argc, char **argv) {
   std::cout<< read_message << "\n";
 
   std::string slash = "/";
+  std::string echo = "/echo";
 
   if (read_message == slash)
   { 
     send(new_server_fd, "HTTP/1.1 200 OK\r\n\r\n", 19, 0);
+  }
+  else if (read_message.substr(0, 5) == echo)
+  {
+    char out_buffer[512];
+    memset(0, out_buffer, sizeof(out_buffer));
+    std::string message = read_message.substr(5, (int)read_message.size()-5);
+    std::string response_prefix = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: 3\r\n\r\n";
+
+    for(int i = 0; i<response_prefix.size(); i++)
+    {
+      out_buffer[i] = response_prefix[i];
+    }
+
+    for(int i = response_prefix.size(); i<response_prefix.size() + message.size(); i++)
+    {
+      out_buffer[i] = message[i - (int)response_prefix.size()];
+    }
+
+    out_buffer[response_prefix.size() + message.size()] = '\0';
+
+    std::cout<< "The response being sent is: " << response_prefix + message << "\n";
+
+    send(new_server_fd, out_buffer,  response_prefix.size() + message.size() + 1, 0);
   }
   else
   {
