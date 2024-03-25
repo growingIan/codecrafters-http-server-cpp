@@ -27,10 +27,10 @@ void socket_work(int new_server_fd, std::string dir = "")
 
 
   int read_pos = -1;
-  string verb;
-  string get = "GET";
-  string post = "POST";
-  for(int i = 0; buffer[i] != '\0'; i++)
+  std::string verb;
+  std::string get = "GET";
+  std::string post = "POST";
+  for(int i = 0; i < read_content; i++)
   {
     if(buffer[i] == ' ')
     {
@@ -220,7 +220,7 @@ void socket_work(int new_server_fd, std::string dir = "")
     std::cout << "The full file path is: \n";
     std::cout << full_file_path <<" \n";
 
-    content_start_pos = full_message.find("\r\n\r\n") + 4;
+    int content_start_pos = full_message.find("\r\n\r\n") + 4;
 
     std::ofstream file;
     file.open(full_file_path, std::ios::binary);
